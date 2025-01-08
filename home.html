@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Anin's Home</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image: url('home_bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            margin: 0;
+            overflow: hidden;
+            cursor: default;
+            height: 100vh;
+            font-family: Garamond, serif
+        }
+        .desktop {
+            position: relative;
+            width: 300px;
+            height: 100%;
+            padding-top: 20px;
+        }
+        .icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            cursor: pointer;
+            margin-bottom: 30px;
+            transition: transform 0.2s;
+        }
+        .icon:hover {
+            transform: scale(1.1);
+        }
+        .icon img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        .icon-label {
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            text-align: center;
+            font-size: 13px;
+        }
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+        }
+        .start-button {
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Windows_logo_-_2012_-_Dark_version.svg/1200px-Windows_logo_-_2012_-_Dark_version.svg.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            width: 40px;
+            height: 30px;
+            cursor: pointer;
+        }
+        .retro-alert {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #C0C0C0;
+            border: 2px solid #000;
+            box-shadow: 3px 3px 0 #808080;
+            padding: 20px;
+            width: 350px;
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transform: scale(0.7);
+            transition: all 0.3s ease;
+        }
+        .retro-alert-title {
+            background-color: navy;
+            color: white;
+            padding: 5px;
+            margin: -20px -20px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .retro-alert-close {
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .retro-alert-button {
+            background-color: #C0C0C0;
+            border: 1px solid #000;
+            box-shadow: 1px 1px 0 #808080;
+            padding: 5px 10px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        .typing-text {
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop" id="desktop"></div>
+    <div class="taskbar">
+        <div class="start-button" onclick="alert('Start Menu - Coming Soon!')"></div>
+    </div>
+    
+    <div id="retroAlert" class="retro-alert">
+        <div class="retro-alert-title">
+            Alert!
+            <span class="retro-alert-close" onclick="closeRetroAlert()">X</span>
+        </div>
+        <div class="typing-text" id="typingText"></div>
+        <button class="retro-alert-button" onclick="closeRetroAlert()">OK</button>
+    </div>
+
+    <script>
+        const desktop = document.getElementById('desktop');
+        const typingText = document.getElementById('typingText');
+        const retroAlert = document.getElementById('retroAlert');
+
+        const icons = [
+            {
+                name: 'Internships',
+                icon: 'internship.png',
+                url: 'internships.html'
+            },
+            {
+                name: 'Projects',
+                icon: 'project.png',
+                url: 'projects.html'
+            },
+            {
+                name: 'Clubs',
+                icon: 'clubs.png',
+                url: 'clubs.html'
+            },
+            {
+                name: 'Hobbies',
+                icon: 'hobbies.png',
+                url: 'hobbies.html'
+            }
+        ];
+
+        icons.forEach((icon) => {
+            const iconElement = document.createElement('div');
+            iconElement.className = 'icon';
+            iconElement.innerHTML = `
+                <img src="${icon.icon}" alt="${icon.name}">
+                <div class="icon-label">${icon.name}</div>
+            `;
+            iconElement.onclick = () => window.location.href = icon.url;
+            desktop.appendChild(iconElement);
+        });
+
+        // Typing effect function
+        function typeWriter(text, element, speed = 50, callback) {
+            let i = 0;
+            element.innerHTML = '';
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else if (callback) {
+                    setTimeout(callback, 1000);
+                }
+            }
+            type();
+        }
+
+        // Sentences to type
+        const sentences = [
+            "Thank you for checking out my portfolio!",
+            "This is a mosaic of all the technologies that I've come to love and loved.",
+            "From the Windows Screen and Github Matcha Heatmap to other visualizations, you'll see a lot of things that have shaped  the tech girl in me.",
+            "Hope you like this!"
+        ];
+
+        // Show retro alert with typing effect
+        function showRetroAlert() {
+            retroAlert.style.display = 'block';
+            setTimeout(() => {
+                retroAlert.style.opacity = '1';
+                retroAlert.style.transform = 'scale(1)';
+                
+                // Type sentences sequentially
+                function typeNextSentence(index) {
+                    if (index < sentences.length) {
+                        typeWriter(sentences[index], typingText, 50, () => {
+                            setTimeout(() => {
+                                typeNextSentence(index + 1);
+                            }, 1500);
+                        });
+                    }
+                }
+                typeNextSentence(0);
+            }, 100);
+        }
+
+        // Close retro alert
+        function closeRetroAlert() {
+            retroAlert.style.opacity = '0';
+            retroAlert.style.transform = 'scale(0.7)';
+            setTimeout(() => {
+                retroAlert.style.display = 'none';
+            }, 300);
+        }
+
+        // Show alert 1 second after page load
+        window.addEventListener('load', () => {
+            setTimeout(showRetroAlert, 1000);
+        });
+    </script>
+</body>
+</html>

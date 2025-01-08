@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Room</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: #1a1a2e;
+            font-family: Garamond, serif;
+        }
+
+        .room-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            padding: 1.5rem;
+            color: white;
+            font-size: 1.5rem;
+            background: linear-gradient(180deg, rgba(26,26,46,1) 0%, rgba(26,26,46,0.9) 100%);
+        }
+        
+        .room {
+            flex: 1;
+            background: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        #roomSvg {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .nav-buttons {
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            background: #1a1a2e;
+        }
+
+        .nav-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .nav-button:hover {
+            background: #e5e7eb;
+            transform: translateY(-2px);
+        }
+
+        .nav-button.active {
+            background: #450000;
+            color: white;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: black;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            pointer-events: none;
+            transition: all 0.3s;
+            transform: translateX(-50%);
+            opacity: 0;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="room-container">
+        <div class="header">
+            Interact with different parts of the room to know more about me!
+        </div>
+        <div class="room">
+            <svg id="roomSvg" viewBox="0 0 400 150" preserveAspectRatio="xMidYMid meet"></svg>
+            <div class="nav-buttons" id="navButtons"></div>
+        </div>
+        <div id="tooltip" class="tooltip"></div>
+    </div>
+
+    <script>
+        const colors = {
+            wall: '#000080',
+            floor: '#1a1a3a',
+            windowFrame: '#A9A9A9',
+            windowGlass: '#87CEEB',
+            couch: '#FF8C00',
+            wood: '#8B4513',
+            plant: '#228B22',
+            frameAccent: '#D2691E',
+            sun: '#FFD700',
+            computerFrame: '#2F4F4F',
+            computerScreen: '#000080',
+            desk: '#8B4513',
+            couchShadow: '#CC7000'
+        };
+
+        const interactiveItems = [
+            {
+                id: 'couch',
+                title: 'Projects',
+                area: { x: 140, y: 100, width: 120, height: 80 }
+            },
+            {
+                id: 'computer',
+                title: 'Internships',
+                area: { x: 300, y: 60, width: 60, height: 50 }
+            },
+            {
+                id: 'art',
+                title: 'Clubs',
+                area: { x: 160, y: 20, width: 80, height: 60 }
+            },
+            {
+                id: 'plant',
+                title: 'Hobbies',
+                area: { x: 40, y: 100, width: 40, height: 60 }
+            }
+        ];
+
+        function createPixelRect(x, y, width, height, color) {
+            const pixelSize = 5;
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            
+            for (let i = 0; i < Math.ceil(width/pixelSize); i++) {
+                for (let j = 0; j < Math.ceil(height/pixelSize); j++) {
+                    const pixel = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                    pixel.setAttribute("x", x + i * pixelSize);
+                    pixel.setAttribute("y", y + j * pixelSize);
+                    pixel.setAttribute("width", pixelSize);
+                    pixel.setAttribute("height", pixelSize);
+                    pixel.setAttribute("fill", color);
+                    group.appendChild(pixel);
+                }
+            }
+            
+            return group;
+        }
+
+        function createRoom() {
+            const svg = document.getElementById('roomSvg');
+            
+            // Background
+            svg.appendChild(createPixelRect(0, 0, 400, 250, colors.wall));
+            svg.appendChild(createPixelRect(0, 180, 400, 70, colors.floor));
+            
+            // Window
+            const window = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            window.appendChild(createPixelRect(20, 20, 100, 120, colors.windowFrame));
+            window.appendChild(createPixelRect(25, 25, 90, 110, colors.windowGlass));
+            for (let i = 0; i < 6; i++) {
+                window.appendChild(createPixelRect(25, 25 + i * 20, 90, 5, colors.windowFrame));
+            }
+            svg.appendChild(window);
+
+            // Couch
+            const couch = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            couch.appendChild(createPixelRect(140, 100, 120, 80, colors.couch));
+            couch.appendChild(createPixelRect(140, 100, 120, 40, colors.couchShadow));
+            for (let i = 0; i < 3; i++) {
+                couch.appendChild(createPixelRect(150 + i * 40, 120, 30, 30, colors.couchShadow));
+                couch.appendChild(createPixelRect(155 + i * 40, 125, 20, 20, colors.couch));
+            }
+            svg.appendChild(couch);
+
+            // Wall art
+            const wallArt = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            wallArt.appendChild(createPixelRect(160, 20, 80, 60, colors.frameAccent));
+            wallArt.appendChild(createPixelRect(165, 25, 70, 50, colors.windowGlass));
+            wallArt.appendChild(createPixelRect(175, 30, 15, 15, colors.sun));
+            wallArt.appendChild(createPixelRect(180, 40, 20, 20, colors.plant));
+            wallArt.appendChild(createPixelRect(165, 55, 70, 15, "#90EE90"));
+            svg.appendChild(wallArt);
+
+            // Side table with plant
+            const tablePlant = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            tablePlant.appendChild(createPixelRect(40, 140, 40, 40, colors.wood));
+            tablePlant.appendChild(createPixelRect(50, 120, 20, 20, colors.frameAccent));
+            tablePlant.appendChild(createPixelRect(45, 100, 30, 20, colors.plant));
+            svg.appendChild(tablePlant);
+
+            // Computer setup
+            const computer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            computer.appendChild(createPixelRect(280, 100, 100, 10, colors.desk));
+            computer.appendChild(createPixelRect(285, 110, 10, 70, colors.desk));
+            computer.appendChild(createPixelRect(365, 110, 10, 70, colors.desk));
+            computer.appendChild(createPixelRect(300, 60, 60, 40, colors.computerFrame));
+            computer.appendChild(createPixelRect(305, 65, 50, 30, "#ADD8E6"));
+            computer.appendChild(createPixelRect(315, 100, 30, 5, colors.computerFrame));
+            computer.appendChild(createPixelRect(305, 90, 40, 10, colors.computerFrame));
+            computer.appendChild(createPixelRect(350, 90, 10, 15, colors.computerFrame));
+            svg.appendChild(computer);
+
+            // Add interactive areas
+            interactiveItems.forEach(item => {
+                const interactiveArea = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                interactiveArea.setAttribute("x", item.area.x);
+                interactiveArea.setAttribute("y", item.area.y);
+                interactiveArea.setAttribute("width", item.area.width);
+                interactiveArea.setAttribute("height", item.area.height);
+                interactiveArea.setAttribute("fill", "transparent");
+                interactiveArea.style.cursor = "pointer";
+                
+                interactiveArea.addEventListener("mouseenter", (e) => showTooltip(e, item));
+                interactiveArea.addEventListener("mouseleave", hideTooltip);
+                interactiveArea.addEventListener("click", () => navigate(item.title));
+                
+                svg.appendChild(interactiveArea);
+            });
+        }
+
+        function createNavButtons() {
+            const container = document.getElementById('navButtons');
+            interactiveItems.forEach(item => {
+                const button = document.createElement('button');
+                button.className = 'nav-button';
+                button.textContent = item.title;
+                button.addEventListener('click', () => navigate(item.title));
+                container.appendChild(button);
+            });
+        }
+
+        function showTooltip(event, item) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = item.title;
+            tooltip.style.opacity = '1';
+            tooltip.style.left = event.pageX + 'px';
+            tooltip.style.top = (event.pageY - 40) + 'px';
+            
+            // Update nav button states
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.classList.toggle('active', button.textContent === item.title);
+            });
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.style.opacity = '0';
+            
+            // Reset nav button states
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.classList.remove('active');
+            });
+        }
+
+        function navigate(title) {
+            const routes = {
+                'Projects': 'projects.html',
+                'Internships': 'internships.html',
+                'Clubs': 'clubs.html',
+                'Hobbies': 'hobbies.html'
+            };
+            
+            window.location.href = routes[title];
+        }
+
+        // Initialize the room
+        document.addEventListener('DOMContentLoaded', () => {
+            createRoom();
+            createNavButtons();
+        });
+    </script>
+</body>
+</html>

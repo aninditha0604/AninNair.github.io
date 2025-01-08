@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clubs</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            background-image: url('club_bg.png');
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Garamond, serif;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px; /* Increased padding for more space */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 880px; /* Increased width */
+        }
+        .club-node {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .club-group:hover .role-label {
+            opacity: 1;
+        }
+        .role-label {
+            font-size: 14px; /* Increased font size */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .club-label {
+            font-size: 16px; /* Increased font size */
+            font-weight: bold;
+        }
+        .timeline-label {
+            font-size: 14px; /* Increased font size */
+            fill: #666;
+        }
+        .instruction-text {
+            fill: #666;
+            font-size: 14px; /* Increased font size */
+            font-style: italic;
+        }
+        .background-bar {
+            fill: #e0e0e0;
+            rx: 5;
+            ry: 5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="visualization"></div>
+    </div>
+    <script>
+        const clubData = [
+            {
+                name: "CS & Programming Club",
+                roles: [
+                    { role: "Founder", startYear: 2023, endYear: 2024, color: "#006A67" },
+                    { role: "President", startYear: 2024, endYear: 2025, color: "#004442" }
+                ]
+            },
+            {
+                name: "Campus Programming Board",
+                roles: [
+                { role: "Member", startYear: 2022, endYear: 2023, color: "#16908D"  }, 
+                { role: "Entertainment Director", startYear: 2023, endYear: 2024, color: "#006A67" }, 
+                { role: "President", startYear: 2024, endYear: 2025, color: "#004442" } ] 
+                
+            },
+            {
+                name: "Women in Science",
+                roles: [
+                    { role: "Member", startYear: 2022, endYear: 2023, color: "#16908D" },
+                    { role: "President", startYear: 2023, endYear: 2024, color: "#006A67" }
+                ]
+            },
+            {
+                name: "Hindu Student Council",
+                roles: [
+                    { role: "Vice-President", startYear: 2023, endYear: 2024, color: "#006A67" }
+                ]
+            }
+        ];
+
+        const margin = { top: 50, right: 100, bottom: 50, left: 150 };
+        const width = 880 - margin.left - margin.right; /* Increased width */
+        const height = 500 - margin.top - margin.bottom; /* Increased height */
+
+        const svg = d3.select("#visualization")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const xScale = d3.scaleLinear()
+            .domain([2022, 2025])
+            .range([0, width]);
+
+        const yScale = d3.scaleBand()
+            .domain(clubData.map(d => d.name))
+            .range([0, height])
+            .padding(0.4);
+
+        svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(xScale).ticks(4).tickFormat(d3.format("d")))
+            .selectAll("text")
+            .style("font-family", "Garamond")
+            .attr("class", "timeline-label");
+
+        svg.append("g")
+            .call(d3.axisLeft(yScale).tickSize(0).tickPadding(20))
+            .selectAll("text")
+            .style("font-family", "Garamond")
+            .attr("class", "club-label")
+            .each(function (d) {
+                const text = d3.select(this);
+                const words = d.split(" "); // Split the club name by space
+                text.text(""); // Clear existing text
+                words.forEach((word, i) => {
+                    text.append("tspan")
+                        .text(word)
+                        .attr("x", -10)
+                        .attr("dy", i === 0 ? 0 : 18); // Increased spacing between words
+                });
+            });
+
+        clubData.forEach(club => {
+            // Add a gray background bar for each club
+            svg.append("rect")
+                .attr("class", "background-bar")
+                .attr("x", xScale(2022))
+                .attr("y", yScale(club.name) + yScale.bandwidth() / 4)
+                .attr("width", xScale(2025) - xScale(2022))
+                .attr("height", yScale.bandwidth() / 2);
+
+            const clubGroup = svg.append("g")
+                .attr("class", "club-group");
+
+            club.roles.forEach(role => {
+                const roleWidth = (role.endYear ? role.endYear : role.startYear + 1) - role.startYear;
+
+                clubGroup.append("rect")
+                    .attr("class", "club-node")
+                    .attr("x", xScale(role.startYear))
+                    .attr("y", yScale(club.name) + yScale.bandwidth() / 4)
+                    .attr("width", xScale(role.startYear + roleWidth) - xScale(role.startYear))
+                    .attr("height", yScale.bandwidth() / 2)
+                    .attr("fill", role.color)
+                    .attr("rx", 5)
+                    .attr("ry", 5);
+
+                clubGroup.append("text")
+                    .attr("class", "role-label")
+                    .attr("x", xScale(role.startYear) + (xScale(role.startYear + roleWidth) - xScale(role.startYear)) / 2)
+                    .attr("y", yScale(club.name) + yScale.bandwidth() / 2 + 6) /* Increased vertical position */
+                    .attr("text-anchor", "middle")
+                    .attr("fill", "white")
+                    .text(role.role);
+            });
+        });
+
+        svg.append("text")
+            .attr("x", width / 2)
+            .attr("y", -20)
+            .attr("text-anchor", "middle")
+            .attr("class", "club-label")
+            .style("font-size", "22px") /* Increased title font size */
+            .text("Clubs and Extracurriculars");
+
+            svg.append("text")
+    .attr("class", "instruction-text")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom)  // Position below the graph
+    .attr("text-anchor", "middle")
+    .text("Hover over each club to see leadership progression!");
+    </script>
+</body>
+</html>

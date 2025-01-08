@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Anin's Search Bar</title>
+    <style>
+        body {
+            font-family: Garamond, serif;
+            background-image: url('bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            cursor: none;
+        }
+        
+        .search-container {
+            display: flex;
+            width: 600px;
+            height: 60px;
+            border: 2px solid #ccc;
+            /*
+            border-radius: 30px; */
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .text-area {
+            flex-grow: 2;
+            display: flex;
+            align-items: center;
+            padding-left: 20px;
+            font-size: 1.2em;
+            color: #333;
+            border-right: 2px solid #ccc;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .search-button {
+            width: 200px;
+            background-color: #008080;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: none;
+        }
+        
+        .search-button img {
+            width: 30px;
+        }
+        
+        #custom-cursor {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <div id="custom-cursor">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <!-- Star shape -->
+            <path d="M12 0L15.09 7.26L23 7.26L16.45 11.74L19.55 19L12 14.52L4.45 19L7.55 11.74L1 7.26L8.91 7.26L12 0Z" 
+                  fill="#FFD700" 
+                  stroke="#DAA520" 
+                  stroke-width="1"/>
+            <!-- Smiley face
+            <circle cx="8.5" cy="9" r="0.8" fill="#000000"/> 
+            <circle cx="15.5" cy="9" r="0.8" fill="#000000"/> 
+            <path d="M8.5 12.5C10 14 14 14 15.5 12.5" 
+                  fill="none" 
+                  stroke="#000000" 
+                  stroke-width="0.8" 
+                  stroke-linecap="round"/>  Smile -->
+        </svg>
+    </div>
+    <div class="search-container">
+        <div class="text-area" id="typed-text"></div>
+        <div class="search-button" onclick="navigateToPage()">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8Y2lyY2xlIGN4PSIxMSIgY3k9IjExIiByPSI4Ii8+CiAgICA8bGluZSB4MT0iMjEiIHkxPSIyMSIgeDI9IjE2LjY1IiB5Mj0iMTYuNjUiLz4KPC9zdmc+" alt="Search">
+        </div>
+    </div>
+
+    <script>
+        const textElement = document.getElementById('typed-text');
+        const cursor = document.getElementById('custom-cursor');
+        
+        const texts = [
+            "Hi, I'm Anin.",
+            "I like playing with data.",
+            "Click here to look at my work!"
+        ];
+
+        let currentTextIndex = 0;
+        let currentCharIndex = 0;
+        let isDeleting = false;
+
+        function typeText() {
+            const currentText = texts[currentTextIndex];
+            
+            if (!isDeleting) {
+                if (currentCharIndex < currentText.length) {
+                    textElement.innerHTML += currentText.charAt(currentCharIndex);
+                    currentCharIndex++;
+                    setTimeout(typeText, 100);
+                } else {
+                    setTimeout(() => {
+                        isDeleting = true;
+                        setTimeout(typeText, 100);
+                    }, 1500);
+                }
+            } else {
+                if (currentCharIndex > 0) {
+                    textElement.innerHTML = currentText.substring(0, currentCharIndex - 1);
+                    currentCharIndex--;
+                    setTimeout(typeText, 50);
+                } else {
+                    isDeleting = false;
+                    currentTextIndex = (currentTextIndex + 1) % texts.length;
+                    setTimeout(typeText, 500);
+                }
+            }
+        }
+
+        function updateCursor(e) {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        }
+
+        function navigateToPage() {
+            window.location.href = 'file:///C:/portfolio/home2.html';
+        }
+
+        document.addEventListener('mousemove', updateCursor);
+        typeText();
+    </script>
+</body>
+</html>

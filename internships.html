@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Internship Journey Tree</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            font-family: Garamond, serif;
+            background-image: url('internsips_bg.png');
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+        }
+        #internship-tree {
+            background-color: #f0f0f0;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            width: 800px; /* Fixed width */
+            height: 650px; /* Fixed height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .node circle {
+            fill: #9a0188;
+            stroke: #002b02;
+            stroke-width: 3px;
+            transition: all 0.3s ease;
+        }
+        .node circle:hover {
+            fill: #78be7c;
+            cursor: pointer;
+        }
+        .link {
+            fill: none;
+            stroke: #E0E0E0;
+            stroke-width: 2px;
+        }
+        .internship-details {
+            background-color: rgba(255,255,255,0.9);
+            border: 1px solid #E0E0E0;
+            border-radius: 5px;
+            padding: 20px;
+            max-width: 300px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .skills-tag {
+            background-color: #E1F5FE;
+            color: #0277BD;
+            padding: 3px 8px;
+            margin: 2px;
+            border-radius: 3px;
+            display: inline-block;
+            font-size: 0.8em;
+        }
+        svg {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div id="internship-tree"></div>
+
+    <script>
+        const internshipData = {
+            "name": "My Internship Journey",
+            "children": [
+                {
+                    "name": "TechCorps",
+                    "position": "Instructor",
+                    "start": "June 2024",
+                    "end": "August 2024",
+                    "description": "Led a Google-sponsored initiative for 25 high school students, improving Block Programming and Data Analytics proficiency by 40%. Also, conducted workshops for 21 middle school girls, boosting Web and App Development skills and increasing tech career interest by",
+                    "skills": ["Microsoft Arcade", "SwiftUI", "MIT App Inventor", "Data Analytics"],
+                    "achievements": [
+                        "Was featured as one of the best tutors across all camps in the US"
+                    ]
+                },
+                {
+                    "name": "Auditor of the State, Ohio",
+                    "position": "Data and Information Technology Audit Intern",
+                    "start": "July 2023",
+                    "end": "December 2023",
+                    "description": "Optimized Python, R, and SQL scripts to clean and validate tax datasets for 5,900+ public entities across Ohio’s 88 counties. Created five Power BI visualizations, enhancing data comprehension and improving decision-making processes for state officials.",
+                    "skills": ["Excel", "Python", "R", "SQL", "PowerBI"],
+                },
+                {
+                    "name": "Oak Ridge National Laboratory",
+                    "position": "Research Intern",
+                    "start": "May 2023",
+                    "end": "July 2023",
+                    "description": "Partnered with Dr. Melissa Allen-Dumas to assess coastal aquifer vulnerability, identifying three critical risk factors. Utilized ArcGIS, R, and Python to develop geospatial visualizations, improving climate resilience strategies for 10 stakeholders. Processed NetCDF data using HPC infrastructure, delivering actionable insights on projected sea level rise impacts.",
+                    "skills": ["Python", "R", "Data Analysis", "ArcGIS", "MODFLOW", "HPC Infrastructure - CADES", "Docker", "Research"],
+                    "achievements": [
+                        "Was one of the 10 students selected into the research program out of 150. Presented all the research findings to all the ORNL employees and received many compliments."
+                    ]
+                }
+            ]
+        };
+
+        function createInternshipTree() {
+            const containerWidth = 800;
+            const containerHeight = 650;
+            const margin = {top: 50, right: 100, bottom: 50, left: 100};
+            const width = containerWidth - margin.left - margin.right;
+            const height = containerHeight - margin.top - margin.bottom;
+
+            // Create SVG
+            const svg = d3.select("#internship-tree")
+                .append("svg")
+                .attr("width", containerWidth)
+                .attr("height", containerHeight);
+
+            // Create main group and center it
+            const g = svg.append("g")
+                .attr("transform", `translate(${containerWidth/2},${margin.top})`);
+
+            // Create tree layout
+            const treeLayout = d3.tree()
+                .size([width, height]);
+
+            // Create root and position it
+            const root = d3.hierarchy(internshipData);
+
+            // Generate tree
+            treeLayout(root);
+
+            // Center all nodes horizontally
+            root.descendants().forEach(d => {
+                d.x = d.x - width/2;
+            });
+
+            // Create links
+            const links = g.selectAll(".link")
+                .data(root.links())
+                .enter()
+                .append("path")
+                .attr("class", "link")
+                .attr("d", d3.linkVertical()
+                    .x(d => d.x)
+                    .y(d => d.y)
+                );
+
+            // Create nodes
+            const nodes = g.selectAll(".node")
+                .data(root.descendants())
+                .enter()
+                .append("g")
+                .attr("class", "node")
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+
+            // Add circles
+            nodes.append("circle")
+                .attr("r", d => d.depth === 0 ? 30 : 20)
+                .on("mouseover", function(event, d) {
+                    if (d.depth > 0) {
+                        showInternshipDetails(d.data, event);
+                    }
+                })
+                .on("mouseout", hideInternshipDetails);
+
+            // Add labels
+            nodes.append("text")
+                .attr("dy", d => d.depth === 0 ? -40 : 30)
+                .attr("text-anchor", "middle")
+                .text(d => d.data.name)
+                .style("font-size", d => d.depth === 0 ? "20px" : "16px")
+                .style("font-weight", d => d.depth === 0 ? "bold" : "normal");
+
+            // Create details container
+            if (!document.getElementById("internship-details")) {
+                d3.select("body")
+                    .append("div")
+                    .attr("id", "internship-details")
+                    .style("position", "absolute")
+                    .style("opacity", 0);
+            }
+        }
+
+        function showInternshipDetails(internship, event) {
+            const detailsContainer = d3.select("#internship-details")
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY + 10) + "px")
+                .style("opacity", 1)
+                .html(`
+                    <div class="internship-details">
+                        <h3>${internship.name}</h3>
+                        <p><strong>${internship.position}</strong></p>
+                        <p>${internship.start} - ${internship.end}</p>
+                        <p>${internship.description}</p>
+                        <div>
+                            <strong>Skills:</strong>
+                            ${internship.skills.map(skill => 
+                                `<span class="skills-tag">${skill}</span>`
+                            ).join('')}
+                        </div>
+                        <div>
+                            <strong>Key Achievements:</strong>
+                            <ul>
+                                ${internship.achievements.map(achievement => 
+                                    `<li>${achievement}</li>`
+                                ).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `);
+        }
+
+        function hideInternshipDetails() {
+            d3.select("#internship-details")
+                .style("opacity", 0);
+        }
+
+        createInternshipTree();
+    </script>
+</body>
+</html>

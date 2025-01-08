@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('hobbies_bg.png');
+      background-size: cover; 
+      background-position: center;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Garamond, serif;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      max-width: 700px;
+      width: 90%;
+    }
+    
+    .visualization-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .visualization-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #1f2937;
+    }
+    
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+      color: #4b5563;
+    }
+    
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    
+    #visualization {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="visualization-header">
+      <div class="visualization-title">My Year in Hobbies</div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: #184388;"></div>
+          <span>Travel</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #024110;"></div>
+          <span>Music</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #e09107;"></div>
+          <span>Dance</span>
+        </div>
+      </div>
+    </div>
+    
+    <div id="visualization"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script>
+    // Sample data - replace with your actual data
+    const hobbyData = {
+      travel: [
+        { date: '2024-02-17', duration: 2, type: 'travel', details: 'Boston' },
+        { date: '2024-05-10', duration: 8, type: 'travel', details: 'Stamford' },
+        { date: '2024-07-10', duration: 3, type: 'travel', details: 'Upstate New York' },
+        { date: '2024-07-12', duration: 4, type: 'travel', details: 'New York City' },
+        { date: '2024-09-27', duration: 3, type: 'travel', details: 'Atlanta' },
+        { date: '2024-10-11', duration: 1, type: 'travel', details: 'Hocking Hills, Ohio' },
+        { date: '2024-11-23', duration: 7, type: 'travel', details: 'Kent, Ohio' },
+        { date: '2024-12-15', duration: 10, type: 'travel', details: 'India' }
+      ],
+      music: [
+      { date: '2024-10-7', duration: 5, type: 'music', details: 'Birthday performance!' },
+      { date: '2024-11-08', duration: 1, type: 'music', details: 'Ukulele Performance' },
+      { date: '2024-12-5', duration: 5, type: 'music', details: 'Write your own song!' }
+      ],
+      dance: [
+        { date: '2024-01-25', duration: 2, type: 'dance', details: 'Stage Manager, Student-led Concert' },
+        { date: '2024-11-15', duration: 3, type: 'dance', details: 'Choreographer and Dancer, Faculty-led Concert' },
+        { date: '2024-10-16', duration: 1, type: 'dance', details: 'Cultural Performance' }
+      ]
+    };
+
+    function createHobbyCalendar() {
+      const width = 450;
+      const height = 450;
+      const innerRadius = 100;
+      const outerRadius = Math.min(width, height) / 2 - 40;
+      
+      // Clear previous visualization
+      d3.select('#visualization').html('');
+      
+      const svg = d3.select('#visualization')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .append('g')
+        .attr('transform', `translate(${width/2},${height/2})`);
+      
+      // Add subtle background circle
+      svg.append('circle')
+        .attr('r', outerRadius + 10)
+        .attr('fill', '#f8fafc')
+        .attr('stroke', '#e2e8f0')
+        .attr('stroke-width', 1);
+      
+      // Combine all activities
+      const allActivities = [
+        ...hobbyData.travel,
+        ...hobbyData.music,
+        ...hobbyData.dance
+      ].sort((a, b) => new Date(a.date) - new Date(b.date));
+      
+      // Create scales
+      const timeScale = d3.scaleTime()
+        .domain([new Date('2024-01-01'), new Date('2024-12-31')])
+        .range([0, 2 * Math.PI]);
+      
+      const radiusScale = d3.scaleLinear()
+        .domain([0, 10])
+        .range([innerRadius, outerRadius]);
+      
+      const colorScale = d3.scaleOrdinal()
+        .domain(['travel', 'music', 'dance'])
+        .range(['#3b82f6', '#10b981', '#f59e0b']);
+      
+      // Create month arcs
+      const months = d3.timeMonths(new Date('2024-01-01'), new Date('2025-01-01'));
+      
+      const monthArc = d3.arc()
+        .innerRadius(innerRadius)
+        .outerRadius(outerRadius)
+        .startAngle(d => timeScale(d))
+        .endAngle(d => timeScale(new Date(d.getFullYear(), d.getMonth() + 1)));
+      
+      svg.selectAll('.month')
+        .data(months)
+        .enter()
+        .append('path')
+        .attr('class', 'month')
+        .attr('d', monthArc)
+        .attr('fill', 'none')
+        .attr('stroke', '#e2e8f0');
+      
+      // Add activities
+      const activityArc = d3.arc()
+        .innerRadius(d => radiusScale(0))
+        .outerRadius(d => radiusScale(d.duration))
+        .startAngle(d => timeScale(new Date(d.date)))
+        .endAngle(d => timeScale(new Date(d.date)) + 0.1);
+      
+      const activities = svg.selectAll('.activity')
+        .data(allActivities)
+        .enter()
+        .append('g')
+        .attr('class', 'activity');
+      
+      activities.append('path')
+        .attr('d', activityArc)
+        .attr('fill', d => colorScale(d.type))
+        .attr('opacity', 0.7)
+        .transition()
+        .duration(1000)
+        .attrTween('d', function(d) {
+          const interpolate = d3.interpolate(0, d.duration);
+          return function(t) {
+            return activityArc({...d, duration: interpolate(t)});
+          };
+        });
+      
+      // Add hover effects and tooltip
+      activities
+        .on('mouseover', function(event, d) {
+          d3.select(this).select('path')
+            .attr('opacity', 1)
+            .attr('transform', 'scale(1.05)');
+          
+          // Add tooltip
+          const tooltip = svg.append('g')
+            .attr('class', 'tooltip');
+          
+          tooltip.append('rect')
+            .attr('x', -60)
+            .attr('y', -40)
+            .attr('width', 120)
+            .attr('height', 30)
+            .attr('fill', 'white')
+            .attr('stroke', '#e2e8f0')
+            .attr('rx', 4);
+          
+          tooltip.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('dy', -20)
+            .attr('fill', '#1f2937')
+            .text(d.details);
+        })
+        .on('mouseout', function() {
+          d3.select(this).select('path')
+            .attr('opacity', 0.7)
+            .attr('transform', 'scale(1)');
+          svg.selectAll('.tooltip').remove();
+        });
+      
+      // Add month labels
+      svg.selectAll('.month-label')
+        .data(months)
+        .enter()
+        .append('text')
+        .attr('class', 'month-label')
+        .attr('transform', d => {
+          const angle = timeScale(d) + (timeScale(new Date(d.getFullYear(), d.getMonth() + 1)) - timeScale(d))/2;
+          return `rotate(${angle * 180 / Math.PI - 90}) translate(${outerRadius + 20},0)`;
+        })
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#64748b')
+        .attr('font-size', '12px')
+        .text(d => d3.timeFormat('%b')(d));
+      
+      // Add center text
+      svg.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', 5)
+        .attr('fill', '#1f2937')
+        .attr('font-size', '14px')
+        .text('2024');
+    }
+
+    // Initialize visualization
+    createHobbyCalendar();
+  </script>
+</body>
+</html>
