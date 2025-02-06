@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Internship Journey Tree</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <title>Internship Journey Cards</title>
     <style>
         body {
             font-family: Garamond, serif;
@@ -11,66 +10,161 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
             min-height: 100vh;
             margin: 0;
-        }
-        #internship-tree {
-            background-color: #f0f0f0;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            width: 800px; /* Fixed width */
-            height: 650px; /* Fixed height */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-        .node circle {
-            fill: #9a0188;
-            stroke: #002b02;
-            stroke-width: 3px;
-            transition: all 0.3s ease;
-        }
-        .node circle:hover {
-            fill: #78be7c;
-            cursor: pointer;
-        }
-        .link {
-            fill: none;
-            stroke: #E0E0E0;
-            stroke-width: 2px;
-        }
-        .internship-details {
-            background-color: rgba(255,255,255,0.9);
-            border: 1px solid #E0E0E0;
-            border-radius: 5px;
             padding: 20px;
-            max-width: 300px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .skills-tag {
+
+        .container {
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background-color: rgba(245, 245, 245, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .title {
+            text-align: center;
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        .internship-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .internship-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .company-name {
+            font-size: 1.5em;
+            color: #9a0188;
+            margin: 0;
+        }
+
+        .duration {
+            color: #666;
+            font-style: italic;
+        }
+
+        .position {
+            color: #444;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+
+        .description {
+            color: #555;
+            line-height: 1.6;
+            margin: 15px 0;
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .internship-card:hover .description {
+            max-height: 500px;
+            opacity: 1;
+            margin-top: 15px;
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .internship-card:hover .skills-container {
+            max-height: 200px;
+            opacity: 1;
+        }
+
+        .skill-tag {
             background-color: #E1F5FE;
             color: #0277BD;
-            padding: 3px 8px;
-            margin: 2px;
-            border-radius: 3px;
-            display: inline-block;
-            font-size: 0.8em;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
         }
-        svg {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+
+        .achievements {
+            margin-top: 15px;
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .internship-card:hover .achievements {
+            max-height: 200px;
+            opacity: 1;
+        }
+
+        .achievements ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+
+        .achievements li {
+            color: #555;
+            margin: 5px 0;
+        }
+
+        .media-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #9a0188;
+            text-decoration: none;
+            font-weight: 600;
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .internship-card:hover .media-link {
+            max-height: 50px;
+            opacity: 1;
+        }
+
+        .media-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div id="internship-tree"></div>
+    <div class="container">
+        <h1 class="title">My Internship Journey</h1>
+        <div id="internship-cards"></div>
+    </div>
 
     <script>
         const internshipData = {
-            "name": "My Internship Journey",
             "children": [
                 {
                     "name": "TechCorps",
@@ -81,15 +175,18 @@
                     "skills": ["Microsoft Arcade", "SwiftUI", "MIT App Inventor", "Data Analytics"],
                     "achievements": [
                         "Was featured as one of the best tutors across all camps in the US"
-                    ]
+                    ],
+                    "mediaLink": "https://www.youtube.com/watch?v=BYDVdvQYPeo",
+                    "mediaText": "Watch TechCorps Program Highlights"
                 },
                 {
                     "name": "Auditor of the State, Ohio",
                     "position": "Data and Information Technology Audit Intern",
                     "start": "July 2023",
                     "end": "December 2023",
-                    "description": "Optimized Python, R, and SQL scripts to clean and validate tax datasets for 5,900+ public entities across Ohio’s 88 counties. Created five Power BI visualizations, enhancing data comprehension and improving decision-making processes for state officials.",
+                    "description": "Optimized Python, R, and SQL scripts to clean and validate tax datasets for 5,900+ public entities across Ohio's 88 counties. Created five Power BI visualizations, enhancing data comprehension and improving decision-making processes for state officials.",
                     "skills": ["Excel", "Python", "R", "SQL", "PowerBI"],
+                    "achievements": []
                 },
                 {
                     "name": "Oak Ridge National Laboratory",
@@ -100,125 +197,54 @@
                     "skills": ["Python", "R", "Data Analysis", "ArcGIS", "MODFLOW", "HPC Infrastructure - CADES", "Docker", "Research"],
                     "achievements": [
                         "Was one of the 10 students selected into the research program out of 150. Presented all the research findings to all the ORNL employees and received many compliments."
-                    ]
+                    ],
+                    "mediaLink": "https://www.instagram.com/oakridgelab/reel/CtzmxSAuXfU/",
+                    "mediaText": "View ORNL Research Highlights"
                 }
             ]
         };
 
-        function createInternshipTree() {
-            const containerWidth = 800;
-            const containerHeight = 650;
-            const margin = {top: 50, right: 100, bottom: 50, left: 100};
-            const width = containerWidth - margin.left - margin.right;
-            const height = containerHeight - margin.top - margin.bottom;
-
-            // Create SVG
-            const svg = d3.select("#internship-tree")
-                .append("svg")
-                .attr("width", containerWidth)
-                .attr("height", containerHeight);
-
-            // Create main group and center it
-            const g = svg.append("g")
-                .attr("transform", `translate(${containerWidth/2},${margin.top})`);
-
-            // Create tree layout
-            const treeLayout = d3.tree()
-                .size([width, height]);
-
-            // Create root and position it
-            const root = d3.hierarchy(internshipData);
-
-            // Generate tree
-            treeLayout(root);
-
-            // Center all nodes horizontally
-            root.descendants().forEach(d => {
-                d.x = d.x - width/2;
-            });
-
-            // Create links
-            const links = g.selectAll(".link")
-                .data(root.links())
-                .enter()
-                .append("path")
-                .attr("class", "link")
-                .attr("d", d3.linkVertical()
-                    .x(d => d.x)
-                    .y(d => d.y)
-                );
-
-            // Create nodes
-            const nodes = g.selectAll(".node")
-                .data(root.descendants())
-                .enter()
-                .append("g")
-                .attr("class", "node")
-                .attr("transform", d => `translate(${d.x},${d.y})`);
-
-            // Add circles
-            nodes.append("circle")
-                .attr("r", d => d.depth === 0 ? 30 : 20)
-                .on("mouseover", function(event, d) {
-                    if (d.depth > 0) {
-                        showInternshipDetails(d.data, event);
-                    }
-                })
-                .on("mouseout", hideInternshipDetails);
-
-            // Add labels
-            nodes.append("text")
-                .attr("dy", d => d.depth === 0 ? -40 : 30)
-                .attr("text-anchor", "middle")
-                .text(d => d.data.name)
-                .style("font-size", d => d.depth === 0 ? "20px" : "16px")
-                .style("font-weight", d => d.depth === 0 ? "bold" : "normal");
-
-            // Create details container
-            if (!document.getElementById("internship-details")) {
-                d3.select("body")
-                    .append("div")
-                    .attr("id", "internship-details")
-                    .style("position", "absolute")
-                    .style("opacity", 0);
-            }
-        }
-
-        function showInternshipDetails(internship, event) {
-            const detailsContainer = d3.select("#internship-details")
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY + 10) + "px")
-                .style("opacity", 1)
-                .html(`
-                    <div class="internship-details">
-                        <h3>${internship.name}</h3>
-                        <p><strong>${internship.position}</strong></p>
-                        <p>${internship.start} - ${internship.end}</p>
-                        <p>${internship.description}</p>
-                        <div>
-                            <strong>Skills:</strong>
-                            ${internship.skills.map(skill => 
-                                `<span class="skills-tag">${skill}</span>`
-                            ).join('')}
-                        </div>
-                        <div>
+        function createInternshipCards() {
+            const container = document.getElementById('internship-cards');
+            
+            internshipData.children.forEach(internship => {
+                const card = document.createElement('div');
+                card.className = 'internship-card';
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h2 class="company-name">${internship.name}</h2>
+                        <span class="duration">${internship.start} - ${internship.end}</span>
+                    </div>
+                    <div class="position">${internship.position}</div>
+                    <div class="description">${internship.description}</div>
+                    <div class="skills-container">
+                        ${internship.skills.map(skill => `
+                            <span class="skill-tag">${skill}</span>
+                        `).join('')}
+                    </div>
+                    ${internship.achievements.length > 0 ? `
+                        <div class="achievements">
                             <strong>Key Achievements:</strong>
                             <ul>
-                                ${internship.achievements.map(achievement => 
-                                    `<li>${achievement}</li>`
-                                ).join('')}
+                                ${internship.achievements.map(achievement => `
+                                    <li>${achievement}</li>
+                                `).join('')}
                             </ul>
                         </div>
-                    </div>
-                `);
+                    ` : ''}
+                    ${internship.mediaLink ? `
+                        <a href="${internship.mediaLink}" target="_blank" class="media-link">
+                            ${internship.mediaText} →
+                        </a>
+                    ` : ''}
+                `;
+                
+                container.appendChild(card);
+            });
         }
 
-        function hideInternshipDetails() {
-            d3.select("#internship-details")
-                .style("opacity", 0);
-        }
-
-        createInternshipTree();
+        createInternshipCards();
     </script>
 </body>
 </html>
