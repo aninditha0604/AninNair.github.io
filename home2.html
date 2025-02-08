@@ -338,7 +338,7 @@
         function navigate(title) {
             switch(title) {
                 case 'Resume':
-                    window.location.href = 'path/to/your/resume.pdf';
+                    window.location.href = 'AnindithaNair_Resume.docx.pdf';
                     break;
                 case 'LinkedIn':
                     window.open('https://www.linkedin.com/in/aninditha-nair', '_blank');
@@ -368,7 +368,7 @@
         function handleContact(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
-            const mailtoLink = `mailto:your-email@example.com?subject=Portfolio Contact&body=${encodeURIComponent(formData.get('message'))}%0D%0A%0D%0AFrom: ${encodeURIComponent(formData.get('name'))}%0D%0AEmail: ${encodeURIComponent(formData.get('email'))}`;
+            const mailtoLink = `mailto:anindithanair06@gmail.com?subject=Portfolio Contact&body=${encodeURIComponent(formData.get('message'))}%0D%0A%0D%0AFrom: ${encodeURIComponent(formData.get('name'))}%0D%0AEmail: ${encodeURIComponent(formData.get('email'))}`;
             window.location.href = mailtoLink;
             closeModal();
         }
