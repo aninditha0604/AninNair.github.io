@@ -26,7 +26,7 @@
     }
 
     .node circle {
-      stroke: black;  /* Changed from #87CEEB to black */
+      stroke: black;
       stroke-width: 3px;
       cursor: pointer;
     }
@@ -40,7 +40,7 @@
     
     .link {
       fill: none;
-      stroke: black;  /* Changed from #87CEEB to black */
+      stroke: black;
       stroke-width: 2px;
       opacity: 1;
       transition: opacity 0.3s;
@@ -96,6 +96,15 @@
       cursor: pointer;
       transition: opacity 0.3s;
     }
+
+    .show-projects {
+      opacity: 1 !important;
+      pointer-events: all !important;
+    }
+    
+    .show-links {
+      opacity: 1 !important;
+    }
   </style>
 </head>
 <body>
@@ -108,19 +117,19 @@
     const data = {
       nodes: [
         // Center node
-        { id: "data", name: "Data", type: "center", color: "#800020" },  // Burgundy
+        { id: "data", name: "Data", type: "center", color: "#800020" },
         
         // Category nodes
-        { id: "viz", name: "Data\nVisualization", type: "category", color: "#228B22" },  // Forest Green
-        { id: "ml", name: "Machine\nLearning", type: "category", color: "#228B22" },     // Forest Green
-        { id: "research", name: "Research", type: "category", color: "#228B22" },        // Forest Green
+        { id: "viz", name: "Data\nVisualization", type: "category", color: "#228B22" },
+        { id: "ml", name: "Machine\nLearning", type: "category", color: "#228B22" },
+        { id: "research", name: "Research", type: "category", color: "#228B22" },
         
-        // Project nodes - all yellow
+        // Project nodes
         { id: "viz1", name: "Interactive Dashboard", type: "project", category: "viz", 
           url: "https://public.tableau.com/app/profile/aninditha.nair/viz/FinalProjectDATA300_2/Dashboard2",
           description: "Non-renewable and fossil fuel energy usage analytics dashboard",
           technologies: ["R", "Tableau"] },
-        { id: "viz2", name: "This Website!", type: "project", category: "viz",
+        { id: "viz2", name: "This website!", type: "project", category: "viz",
           url: "#https://aninditha0604.github.io/AninNair.github.io/",
           description: "Interactive visualization of project portfolio",
           technologies: ["SVG", "D3.js", "JavaScript"] },
@@ -133,7 +142,7 @@
           description: "Temperature prediction using Linear and Polylinear Regression and greenspace mapping in Mumbai using Python",
           technologies: ["Python", "Leaflet", "Folium", "OpenWeather API"] },
         { id: "ml3", name:"Energy Consumption Prediction", type:"project", category: "ml",
-          url: "https://github.com/aninditha0604/Energy-Consumption-Production-using-XGBoost", 
+          url: "#energy", 
           description: "An XGBoost-based machine learning model, reducing prediction errors for energy consumption by 40% across various regions",
           technologies: ["Python", "Pandas", "NumPy", "Scikit"] },
         { id: "research1", name: "Assessment of Urban Heat Island in Columbus", type: "project", category: "research",
@@ -194,7 +203,7 @@
       }
     });
 
-    // Draw links with original styling
+    // Draw links
     const links = svg.selectAll("path")
       .data(data.links)
       .enter()
@@ -214,7 +223,7 @@
     // Initially hide project nodes and links
     svg.selectAll(".project-link").classed("hidden", true);
     
-    // Draw nodes with original styling
+    // Draw nodes
     const nodes = svg.selectAll(".node")
       .data(data.nodes)
       .enter()
@@ -225,9 +234,9 @@
     nodes.append("circle")
       .attr("r", d => d.type === "center" ? 35 : d.type === "category" ? 20 : 12)
       .style("fill", d => {
-        if (d.type === "center") return "#800020";  // Burgundy
-        if (d.type === "category") return "#228B22";  // Forest Green
-        return "#FFD700";  // Yellow for project nodes
+        if (d.type === "center") return "#800020";
+        if (d.type === "category") return "#228B22";
+        return "#FFD700";
       });
 
     nodes.append("text")
@@ -240,35 +249,72 @@
     // Initially hide project nodes
     svg.selectAll(".project-node").style("opacity", 0);
 
+    let hideTimeout;
+    let activeCategory = null;
+
     // Add interactivity
     nodes.filter(d => d.type === "category")
       .on("mouseover", showCategory)
-      .on("mouseout", hideCategory);
+      .on("mouseout", function(event, d) {
+        if (hideTimeout) clearTimeout(hideTimeout);
+        
+        hideTimeout = setTimeout(() => {
+          const mouseX = event.clientX;
+          const mouseY = event.clientY;
+          const elemUnder = document.elementFromPoint(mouseX, mouseY);
+          
+          if (!elemUnder?.closest('.project-node') && !elemUnder?.closest('.project-details')) {
+            hideCategory(event, d);
+            activeCategory = null;
+          }
+        }, 100);
+      });
 
     nodes.filter(d => d.type === "project")
-      .on("click", handleProjectClick)
-      .on("mouseover", showDetails)
-      .on("mouseout", hideDetails);
+      .on("mouseover", function(event, d) {
+        if (hideTimeout) clearTimeout(hideTimeout);
+        showDetails(event, d);
+      })
+      .on("mouseout", function(event, d) {
+        const relatedTarget = event.relatedTarget;
+        if (!relatedTarget?.closest('.project-details')) {
+          hideDetails();
+        }
+      })
+      .on("click", handleProjectClick);
+
+    // Handle details panel hover
+    d3.select("#details")
+      .on("mouseover", function() {
+        if (hideTimeout) clearTimeout(hideTimeout);
+      })
+      .on("mouseout", function(event) {
+        const relatedTarget = event.relatedTarget;
+        if (!relatedTarget?.closest('.project-node')) {
+          hideDetails();
+          hideCategory(null, null);
+        }
+      });
 
     function showCategory(event, d) {
-      // Show only the projects and links for this category
+      activeCategory = d.id;
+      
       svg.selectAll(".project-node")
         .filter(n => n.category === d.id)
-        .style("opacity", 1)
-        .style("pointer-events", "all");
+        .classed("show-projects", true);
       
       svg.selectAll(".project-link")
         .filter(l => l.source === d.id)
+        .classed("show-links", true)
         .classed("hidden", false);
     }
 
     function hideCategory(event, d) {
-      // Hide all projects and their links
       svg.selectAll(".project-node")
-        .style("opacity", 0)
-        .style("pointer-events", "none");
+        .classed("show-projects", false);
       
       svg.selectAll(".project-link")
+        .classed("show-links", false)
         .classed("hidden", true);
     }
 
