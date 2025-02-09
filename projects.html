@@ -6,7 +6,6 @@
     body {
       display: flex;
       background-image: url('home_bg.png');
-      
       justify-content: center;
       align-items: center;
       min-height: 100vh;
@@ -27,20 +26,29 @@
     }
 
     .node circle {
-      stroke: #87CEEB;
+      stroke: black;  /* Changed from #87CEEB to black */
       stroke-width: 3px;
+      cursor: pointer;
     }
     
     .node text {
       font-family: Garamond, serif;
-      fill: #000080;  /* Navy blue text */
+      fill: #000080;
       font-weight: 500;
+      pointer-events: none;
     }
     
     .link {
       fill: none;
-      stroke: #87CEEB;
+      stroke: black;  /* Changed from #87CEEB to black */
       stroke-width: 2px;
+      opacity: 1;
+      transition: opacity 0.3s;
+    }
+    
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
     }
     
     .category-label {
@@ -52,6 +60,7 @@
     .project-label {
       font-size: 16px;
       transform: translateY(30px);
+      cursor: pointer;
     }
     
     .center-label {
@@ -81,7 +90,11 @@
       color: #3b82f6;
       border-radius: 12px;
       font-size: 12px;
-      font-family: Garamond, serif;
+    }
+
+    .project-node {
+      cursor: pointer;
+      transition: opacity 0.3s;
     }
   </style>
 </head>
@@ -104,24 +117,31 @@
         
         // Project nodes - all yellow
         { id: "viz1", name: "Interactive Dashboard", type: "project", category: "viz", 
+          url: "https://public.tableau.com/app/profile/aninditha.nair/viz/FinalProjectDATA300_2/Dashboard2",
           description: "Non-renewable and fossil fuel energy usage analytics dashboard",
-          technologies: ["R", "Tableau",] },
-        { id: "viz2", name: "Portfolio Visualizer", type: "project", category: "viz",
+          technologies: ["R", "Tableau"] },
+        { id: "viz2", name: "This Website!", type: "project", category: "viz",
+          url: "#https://aninditha0604.github.io/AninNair.github.io/",
           description: "Interactive visualization of project portfolio",
           technologies: ["SVG", "D3.js", "JavaScript"] },
         { id: "ml1", name: "Stock Market Trend Prediction", type: "project", category: "ml",
+          url: "#stock",
           description: "An LSTM-based Stock Market Predictor implemented from scratch in Python, analyzing 2010–2024 data to forecast trends with high accuracy",
           technologies: ["Python", "Pandas", "NumPy", "Scikit"] },
         { id: "ml2", name: "Greenspace Mapping and Temperature Prediction", type: "project", category: "ml",
+          url: "#greenspace",
           description: "Temperature prediction using Linear and Polylinear Regression and greenspace mapping in Mumbai using Python",
           technologies: ["Python", "Leaflet", "Folium", "OpenWeather API"] },
-        {id: "ml3", name:"Energy Consumption Prediction", type:"project", category: "ml", 
-          description: "An XGBoost-based machine learning model, reducing prediction errors for energy consumption by 40% across various regions.. ",
+        { id: "ml3", name:"Energy Consumption Prediction", type:"project", category: "ml",
+          url: "https://github.com/aninditha0604/Energy-Consumption-Production-using-XGBoost", 
+          description: "An XGBoost-based machine learning model, reducing prediction errors for energy consumption by 40% across various regions",
           technologies: ["Python", "Pandas", "NumPy", "Scikit"] },
         { id: "research1", name: "Assessment of Urban Heat Island in Columbus", type: "project", category: "research",
+          url: "#heat-island",
           description: "Helped perform Literature Review for this project to observe different methodologies used in urban heat island research",
           technologies: [""] },
         { id: "research2", name: "Urban Heat Island Effect in Mumbai: Mitigation Study", type: "project", category: "research",
+          url: "#uhi",
           description: "[STILL ONGOING] Studying different techniques to monitor and mitigate urban heat island in a complex city like Mumbai",
           technologies: [""] }
       ],
@@ -139,8 +159,8 @@
       }
     });
 
-    const width = 950;  // Reduced from 900
-    const height = 750;  // Reduced from 800
+    const width = 950;
+    const height = 750;
     const centerX = width / 2;
     const centerY = height / 2;
 
@@ -149,10 +169,10 @@
       .attr("width", width)
       .attr("height", height);
 
-    // Calculate positions with reduced spacing
+    // Calculate positions
     const angleStep = (2 * Math.PI) / 3;
-    const radiusCategory = 200;  // Reduced from 200
-    const radiusProject = 300;   // Reduced from 350
+    const radiusCategory = 200;
+    const radiusProject = 300;
     
     data.nodes.forEach(node => {
       if (node.type === "center") {
@@ -174,12 +194,12 @@
       }
     });
 
-    // Draw links
-    svg.selectAll("path")
+    // Draw links with original styling
+    const links = svg.selectAll("path")
       .data(data.links)
       .enter()
       .append("path")
-      .attr("class", "link")
+      .attr("class", d => `link ${d.type}-link`)
       .attr("d", d => {
         const source = data.nodes.find(n => n.id === d.source);
         const target = data.nodes.find(n => n.id === d.target);
@@ -191,16 +211,19 @@
                  ${target.x},${target.y}`;
       });
 
-    // Draw nodes
+    // Initially hide project nodes and links
+    svg.selectAll(".project-link").classed("hidden", true);
+    
+    // Draw nodes with original styling
     const nodes = svg.selectAll(".node")
       .data(data.nodes)
       .enter()
       .append("g")
-      .attr("class", "node")
+      .attr("class", d => `node ${d.type}-node`)
       .attr("transform", d => `translate(${d.x},${d.y})`);
 
     nodes.append("circle")
-      .attr("r", d => d.type === "center" ? 35 : d.type === "category" ? 20 : 12)  // Reduced circle sizes
+      .attr("r", d => d.type === "center" ? 35 : d.type === "category" ? 20 : 12)
       .style("fill", d => {
         if (d.type === "center") return "#800020";  // Burgundy
         if (d.type === "category") return "#228B22";  // Forest Green
@@ -214,9 +237,46 @@
       .style("text-anchor", "middle")
       .text(d => d.name);
 
+    // Initially hide project nodes
+    svg.selectAll(".project-node").style("opacity", 0);
+
     // Add interactivity
-    nodes.on("mouseover", showDetails)
-        .on("mouseout", hideDetails);
+    nodes.filter(d => d.type === "category")
+      .on("mouseover", showCategory)
+      .on("mouseout", hideCategory);
+
+    nodes.filter(d => d.type === "project")
+      .on("click", handleProjectClick)
+      .on("mouseover", showDetails)
+      .on("mouseout", hideDetails);
+
+    function showCategory(event, d) {
+      // Show only the projects and links for this category
+      svg.selectAll(".project-node")
+        .filter(n => n.category === d.id)
+        .style("opacity", 1)
+        .style("pointer-events", "all");
+      
+      svg.selectAll(".project-link")
+        .filter(l => l.source === d.id)
+        .classed("hidden", false);
+    }
+
+    function hideCategory(event, d) {
+      // Hide all projects and their links
+      svg.selectAll(".project-node")
+        .style("opacity", 0)
+        .style("pointer-events", "none");
+      
+      svg.selectAll(".project-link")
+        .classed("hidden", true);
+    }
+
+    function handleProjectClick(event, d) {
+      if (d.url) {
+        window.location.href = d.url;
+      }
+    }
 
     function showDetails(event, d) {
       if (d.type === "project") {
@@ -226,11 +286,14 @@
             <h3 style="margin: 0 0 10px 0; font-size: 16px;">${d.name}</h3>
             <p style="margin: 0 0 10px 0; font-size: 14px;">${d.description}</p>
             <div>
-              <strong style="font-size: 14px;">Technologies:</strong><br>
-              ${d.technologies.map(tech => 
-                `<span class="tech-tag">${tech}</span>`
-              ).join('')}
+              ${d.technologies.length > 0 ? `
+                <strong style="font-size: 14px;">Technologies:</strong><br>
+                ${d.technologies.map(tech => 
+                  `<span class="tech-tag">${tech}</span>`
+                ).join('')}
+              ` : ''}
             </div>
+            <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">Click to view project</p>
           `);
       }
     }
