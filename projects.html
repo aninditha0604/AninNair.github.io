@@ -4,349 +4,280 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <style>
     body {
-      display: flex;
       background-image: url('home_bg.png');
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
       margin: 0;
       font-family: Garamond, serif;
+      min-height: 100vh;
+      padding: 40px 0;
     }
     
     .container {
-      background: white;
+      max-width: 1200px;
+      margin: 0 auto;
       padding: 40px;
+      background: white;
       border-radius: 20px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      margin: 20px;
     }
     
-    #visualization {
-      position: relative;
-    }
-
-    .node circle {
-      stroke: black;
-      stroke-width: 3px;
-      cursor: pointer;
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
     }
     
-    .node text {
+    .header h1 {
+      color: #800020;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    
+    .categories {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 50px;
+    }
+    
+    .category-btn {
+      background: none;
+      border: 3px solid #228B22;
+      color: #228B22;
+      padding: 10px 20px;
+      border-radius: 30px;
       font-family: Garamond, serif;
-      fill: #000080;
-      font-weight: 500;
-      pointer-events: none;
-    }
-    
-    .link {
-      fill: none;
-      stroke: black;
-      stroke-width: 2px;
-      opacity: 1;
-      transition: opacity 0.3s;
-    }
-    
-    .hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-    
-    .category-label {
       font-size: 18px;
       font-weight: bold;
-      transform: translateY(40px);
-    }
-    
-    .project-label {
-      font-size: 16px;
-      transform: translateY(30px);
       cursor: pointer;
+      transition: all 0.3s;
     }
     
-    .center-label {
-      font-size: 22px;
+    .category-btn:hover, .category-btn.active {
+      background: #228B22;
+      color: white;
+    }
+    
+    .projects-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 30px;
+    }
+    
+    .project-card {
+      border: 2px solid #e0e0e0;
+      border-radius: 15px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .project-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .project-header {
+      background: #FFD700;
+      padding: 15px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .project-title {
+      margin: 0;
+      color: #000080;
+      font-size: 18px;
       font-weight: bold;
-      transform: translateY(60px);
     }
     
-    .project-details {
-      position: absolute;
-      right: 20px;
-      top: 20px;
-      width: 250px;
+    .project-body {
       padding: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      display: none;
-      font-family: Garamond, serif;
+    }
+    
+    .project-description {
+      margin-bottom: 20px;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #333;
+    }
+    
+    .tech-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
     }
     
     .tech-tag {
       display: inline-block;
       padding: 4px 12px;
-      margin: 3px;
       background: #e5edff;
       color: #3b82f6;
       border-radius: 12px;
       font-size: 12px;
     }
-
-    .project-node {
-      cursor: pointer;
-      transition: opacity 0.3s;
-    }
-
-    .show-projects {
-      opacity: 1 !important;
-      pointer-events: all !important;
+    
+    .project-link {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #228B22;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 14px;
+      transition: background 0.3s;
     }
     
-    .show-links {
-      opacity: 1 !important;
+    .project-link:hover {
+      background: #1a6b1a;
+    }
+    
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div id="visualization"></div>
-    <div id="details" class="project-details"></div>
+    <div class="header">
+      <h1>Data Projects</h1>
+      <p>Explore my portfolio of data science & visualization work</p>
+    </div>
+    
+    <div class="categories">
+      <button class="category-btn active" data-category="all">All Projects</button>
+      <button class="category-btn" data-category="viz">Data Visualization</button>
+      <button class="category-btn" data-category="ml">Machine Learning</button>
+      <button class="category-btn" data-category="research">Research</button>
+    </div>
+    
+    <div class="projects-container" id="projects">
+      <!-- Projects will be added here dynamically -->
+    </div>
   </div>
 
   <script>
-    const data = {
-      nodes: [
-        // Center node
-        { id: "data", name: "Data", type: "center", color: "#800020" },
-        
-        // Category nodes
-        { id: "viz", name: "Data\nVisualization", type: "category", color: "#228B22" },
-        { id: "ml", name: "Machine\nLearning", type: "category", color: "#228B22" },
-        { id: "research", name: "Research", type: "category", color: "#228B22" },
-        
-        // Project nodes
-        { id: "viz1", name: "Interactive Dashboard", type: "project", category: "viz", 
-          url: "https://public.tableau.com/app/profile/aninditha.nair/viz/FinalProjectDATA300_2/Dashboard2",
-          description: "Non-renewable and fossil fuel energy usage analytics dashboard",
-          technologies: ["R", "Tableau"] },
-        { id: "viz2", name: "This website!", type: "project", category: "viz",
-          url: "#https://aninditha0604.github.io/AninNair.github.io/",
-          description: "Interactive visualization of project portfolio",
-          technologies: ["SVG", "D3.js", "JavaScript"] },
-        { id: "ml1", name: "Stock Market Trend Prediction", type: "project", category: "ml",
-          url: "#stock",
-          description: "An LSTM-based Stock Market Predictor implemented from scratch in Python, analyzing 2010–2024 data to forecast trends with high accuracy",
-          technologies: ["Python", "Pandas", "NumPy", "Scikit"] },
-        { id: "ml2", name: "Greenspace Mapping and Temperature Prediction", type: "project", category: "ml",
-          url: "#greenspace",
-          description: "Temperature prediction using Linear and Polylinear Regression and greenspace mapping in Mumbai using Python",
-          technologies: ["Python", "Leaflet", "Folium", "OpenWeather API"] },
-        { id: "ml3", name:"Energy Consumption Prediction", type:"project", category: "ml",
-          url: "#energy", 
-          description: "An XGBoost-based machine learning model, reducing prediction errors for energy consumption by 40% across various regions",
-          technologies: ["Python", "Pandas", "NumPy", "Scikit"] },
-        { id: "research1", name: "Assessment of Urban Heat Island in Columbus", type: "project", category: "research",
-          url: "#heat-island",
-          description: "Helped perform Literature Review for this project to observe different methodologies used in urban heat island research",
-          technologies: [""] },
-        { id: "research2", name: "Urban Heat Island Effect in Mumbai: Mitigation Study", type: "project", category: "research",
-          url: "#uhi",
-          description: "[STILL ONGOING] Studying different techniques to monitor and mitigate urban heat island in a complex city like Mumbai",
-          technologies: [""] }
-      ],
-      links: []
-    };
-
-    // Create links
-    ["viz", "ml", "research"].forEach(category => {
-      data.links.push({ source: "data", target: category, type: "category" });
-    });
-
-    data.nodes.forEach(node => {
-      if (node.type === "project") {
-        data.links.push({ source: node.category, target: node.id, type: "project" });
+    const projectsData = [
+      {
+        id: "viz1",
+        name: "Interactive Dashboard",
+        category: "viz",
+        categoryName: "Data Visualization",
+        url: "https://public.tableau.com/app/profile/aninditha.nair/viz/FinalProjectDATA300_2/Dashboard2",
+        description: "Non-renewable and fossil fuel energy usage analytics dashboard",
+        technologies: ["R", "Tableau"]
+      },
+      {
+        id: "viz2",
+        name: "This website!",
+        category: "viz",
+        categoryName: "Data Visualization",
+        url: "#https://aninditha0604.github.io/AninNair.github.io/",
+        description: "Interactive visualization of project portfolio",
+        technologies: ["SVG", "D3.js", "JavaScript"]
+      },
+      {
+        id: "ml1",
+        name: "Stock Market Trend Prediction",
+        category: "ml",
+        categoryName: "Machine Learning",
+        url: "#stock",
+        description: "An LSTM-based Stock Market Predictor implemented from scratch in Python, analyzing 2010–2024 data to forecast trends with high accuracy",
+        technologies: ["Python", "Pandas", "NumPy", "Scikit"]
+      },
+      {
+        id: "ml2",
+        name: "Greenspace Mapping and Temperature Prediction",
+        category: "ml",
+        categoryName: "Machine Learning",
+        url: "#greenspace",
+        description: "Temperature prediction using Linear and Polylinear Regression and greenspace mapping in Mumbai using Python",
+        technologies: ["Python", "Leaflet", "Folium", "OpenWeather API"]
+      },
+      {
+        id: "ml3",
+        name: "Energy Consumption Prediction",
+        category: "ml",
+        categoryName: "Machine Learning",
+        url: "#energy",
+        description: "An XGBoost-based machine learning model, reducing prediction errors for energy consumption by 40% across various regions",
+        technologies: ["Python", "Pandas", "NumPy", "Scikit"]
+      },
+      {
+        id: "research1",
+        name: "Assessment of Urban Heat Island in Columbus",
+        category: "research",
+        categoryName: "Research",
+        url: "#heat-island",
+        description: "Helped perform Literature Review for this project to observe different methodologies used in urban heat island research",
+        technologies: []
+      },
+      {
+        id: "research2",
+        name: "Urban Heat Island Effect in Mumbai: Mitigation Study",
+        category: "research",
+        categoryName: "Research",
+        url: "#uhi",
+        description: "[STILL ONGOING] Studying different techniques to monitor and mitigate urban heat island in a complex city like Mumbai",
+        technologies: []
       }
-    });
+    ];
 
-    const width = 950;
-    const height = 750;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    function createProjectCard(project) {
+      const card = document.createElement('div');
+      card.className = `project-card ${project.category}`;
+      
+      card.innerHTML = `
+        <div class="project-header">
+          <h3 class="project-title">${project.name}</h3>
+        </div>
+        <div class="project-body">
+          <p class="project-description">${project.description}</p>
+          <div class="tech-tags">
+            ${project.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+          </div>
+          <a href="${project.url}" class="project-link">View Project</a>
+        </div>
+      `;
+      
+      return card;
+    }
 
-    const svg = d3.select("#visualization")
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height);
-
-    // Calculate positions
-    const angleStep = (2 * Math.PI) / 3;
-    const radiusCategory = 200;
-    const radiusProject = 300;
-    
-    data.nodes.forEach(node => {
-      if (node.type === "center") {
-        node.x = centerX;
-        node.y = centerY;
-      } else if (node.type === "category") {
-        const idx = ["viz", "ml", "research"].indexOf(node.id);
-        const angle = -Math.PI/2 + angleStep * idx;
-        node.x = centerX + Math.cos(angle) * radiusCategory;
-        node.y = centerY + Math.sin(angle) * radiusCategory;
-      } else if (node.type === "project") {
-        const categoryIdx = ["viz", "ml", "research"].indexOf(node.category);
-        const projectsInCategory = data.nodes.filter(n => n.category === node.category);
-        const projectIdx = projectsInCategory.indexOf(node);
-        const baseAngle = -Math.PI/2 + angleStep * categoryIdx;
-        const projectAngle = baseAngle + (projectIdx - 0.5) * 0.6;
-        node.x = centerX + Math.cos(projectAngle) * radiusProject;
-        node.y = centerY + Math.sin(projectAngle) * radiusProject;
-      }
-    });
-
-    // Draw links
-    const links = svg.selectAll("path")
-      .data(data.links)
-      .enter()
-      .append("path")
-      .attr("class", d => `link ${d.type}-link`)
-      .attr("d", d => {
-        const source = data.nodes.find(n => n.id === d.source);
-        const target = data.nodes.find(n => n.id === d.target);
-        const dx = target.x - source.x;
-        const dy = target.y - source.y;
-        return `M${source.x},${source.y}
-                C${source.x + dx/3},${source.y + dy/3}
-                 ${source.x + 2*dx/3},${source.y + 2*dy/3}
-                 ${target.x},${target.y}`;
+    function renderProjects(category = 'all') {
+      const projectsContainer = document.getElementById('projects');
+      projectsContainer.innerHTML = '';
+      
+      const filteredProjects = category === 'all' 
+        ? projectsData 
+        : projectsData.filter(project => project.category === category);
+      
+      filteredProjects.forEach(project => {
+        const card = createProjectCard(project);
+        projectsContainer.appendChild(card);
       });
+    }
 
-    // Initially hide project nodes and links
-    svg.selectAll(".project-link").classed("hidden", true);
-    
-    // Draw nodes
-    const nodes = svg.selectAll(".node")
-      .data(data.nodes)
-      .enter()
-      .append("g")
-      .attr("class", d => `node ${d.type}-node`)
-      .attr("transform", d => `translate(${d.x},${d.y})`);
-
-    nodes.append("circle")
-      .attr("r", d => d.type === "center" ? 35 : d.type === "category" ? 20 : 12)
-      .style("fill", d => {
-        if (d.type === "center") return "#800020";
-        if (d.type === "category") return "#228B22";
-        return "#FFD700";
-      });
-
-    nodes.append("text")
-      .attr("class", d => 
-        d.type === "center" ? "center-label" : 
-        d.type === "category" ? "category-label" : "project-label")
-      .style("text-anchor", "middle")
-      .text(d => d.name);
-
-    // Initially hide project nodes
-    svg.selectAll(".project-node").style("opacity", 0);
-
-    let hideTimeout;
-    let activeCategory = null;
-
-    // Add interactivity
-    nodes.filter(d => d.type === "category")
-      .on("mouseover", showCategory)
-      .on("mouseout", function(event, d) {
-        if (hideTimeout) clearTimeout(hideTimeout);
-        
-        hideTimeout = setTimeout(() => {
-          const mouseX = event.clientX;
-          const mouseY = event.clientY;
-          const elemUnder = document.elementFromPoint(mouseX, mouseY);
+    function initializeGallery() {
+      // Render all projects initially
+      renderProjects();
+      
+      // Add event listeners to category buttons
+      document.querySelectorAll('.category-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons
+          document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.classList.remove('active');
+          });
           
-          if (!elemUnder?.closest('.project-node') && !elemUnder?.closest('.project-details')) {
-            hideCategory(event, d);
-            activeCategory = null;
-          }
-        }, 100);
+          // Add active class to clicked button
+          this.classList.add('active');
+          
+          // Filter projects
+          const category = this.getAttribute('data-category');
+          renderProjects(category);
+        });
       });
-
-    nodes.filter(d => d.type === "project")
-      .on("mouseover", function(event, d) {
-        if (hideTimeout) clearTimeout(hideTimeout);
-        showDetails(event, d);
-      })
-      .on("mouseout", function(event, d) {
-        const relatedTarget = event.relatedTarget;
-        if (!relatedTarget?.closest('.project-details')) {
-          hideDetails();
-        }
-      })
-      .on("click", handleProjectClick);
-
-    // Handle details panel hover
-    d3.select("#details")
-      .on("mouseover", function() {
-        if (hideTimeout) clearTimeout(hideTimeout);
-      })
-      .on("mouseout", function(event) {
-        const relatedTarget = event.relatedTarget;
-        if (!relatedTarget?.closest('.project-node')) {
-          hideDetails();
-          hideCategory(null, null);
-        }
-      });
-
-    function showCategory(event, d) {
-      activeCategory = d.id;
-      
-      svg.selectAll(".project-node")
-        .filter(n => n.category === d.id)
-        .classed("show-projects", true);
-      
-      svg.selectAll(".project-link")
-        .filter(l => l.source === d.id)
-        .classed("show-links", true)
-        .classed("hidden", false);
     }
 
-    function hideCategory(event, d) {
-      svg.selectAll(".project-node")
-        .classed("show-projects", false);
-      
-      svg.selectAll(".project-link")
-        .classed("show-links", false)
-        .classed("hidden", true);
-    }
-
-    function handleProjectClick(event, d) {
-      if (d.url) {
-        window.location.href = d.url;
-      }
-    }
-
-    function showDetails(event, d) {
-      if (d.type === "project") {
-        const details = d3.select("#details")
-          .style("display", "block")
-          .html(`
-            <h3 style="margin: 0 0 10px 0; font-size: 16px;">${d.name}</h3>
-            <p style="margin: 0 0 10px 0; font-size: 14px;">${d.description}</p>
-            <div>
-              ${d.technologies.length > 0 ? `
-                <strong style="font-size: 14px;">Technologies:</strong><br>
-                ${d.technologies.map(tech => 
-                  `<span class="tech-tag">${tech}</span>`
-                ).join('')}
-              ` : ''}
-            </div>
-            <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">Click to view project</p>
-          `);
-      }
-    }
-
-    function hideDetails() {
-      d3.select("#details").style("display", "none");
-    }
+    // Initialize the gallery when the page loads
+    window.addEventListener('DOMContentLoaded', initializeGallery);
   </script>
 </body>
 </html>
