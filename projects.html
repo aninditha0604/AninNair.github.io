@@ -155,71 +155,70 @@
 
   <script>
     const projectsData = [
-      {
-        id: "viz1",
-        name: "Interactive Dashboard",
-        category: "viz",
-        categoryName: "Data Visualization",
-        url: "https://public.tableau.com/app/profile/aninditha.nair/viz/FinalProjectDATA300_2/Dashboard2",
-        description: "Non-renewable and fossil fuel energy usage analytics dashboard",
-        technologies: ["R", "Tableau"]
-      },
-      {
-        id: "viz2",
-        name: "This website!",
-        category: "viz",
-        categoryName: "Data Visualization",
-        url: "https://aninditha0604.github.io/AninNair.github.io/",
-        description: "Interactive visualization of project portfolio",
-        technologies: ["SVG", "D3.js", "JavaScript"]
-      },
-      {
-        id: "ml1",
-        name: "Stock Market Trend Prediction",
-        category: "ml",
-        categoryName: "Machine Learning",
-        url: "https://github.com/aninditha0604/StockMarketPrediction_LSTM",
-        description: "An LSTM-based Stock Market Predictor implemented from scratch in Python, analyzing 2010–2024 data to forecast trends with high accuracy",
-        technologies: ["Python", "Pandas", "NumPy", "Scikit"]
-      },
-      {
-        id: "ml2",
-        name: "Greenspace Mapping and Temperature Prediction",
-        category: "ml",
-        categoryName: "Machine Learning",
-        url: "#greenspace",
-        description: "Temperature prediction using Linear and Polylinear Regression and greenspace mapping in Mumbai using Python",
-        technologies: ["Python", "Leaflet", "Folium", "OpenWeather API"]
-      },
-      {
-        id: "ml3",
-        name: "Energy Consumption Prediction",
-        category: "ml",
-        categoryName: "Machine Learning",
-        url: "https://github.com/aninditha0604/Energy-Consumption-Production-using-XGBoost",
-        description: "An XGBoost-based machine learning model, reducing prediction errors for energy consumption by 40% across various regions",
-        technologies: ["Python", "Pandas", "NumPy", "Scikit"]
-      }
-      {
-        id: "research1",
-        name: "Artificial Intelligence for Urban Heat Island",
-        category: "research",
-        categoryName: "Research",
-        url: "",
-        description: "Analyzed four case studies on the use of AI in mitigating Urban Heat Islands, exploring its potential and challenges in urban climate adaptation.",
-        technologies: []
-      }
-     {
-        id: "research2",
-        name: "The Workings of Large Language Models",
-        category: "research",
-        categoryName: "Research",
-        url: "",
-        description: "Explained the fundamentals of Large Language Model starting from the history to transformer-based models for both a technical and non-technical audience.",
-        technologies: []
-      }
-    ];
-
+  {
+    id: "viz1",
+    name: "Interactive Dashboard",
+    category: "viz",
+    categoryName: "Data Visualization",
+    url: "https://public.tableau.com/app/profile/aninditha.nair/viz/FinalProjectDATA300_2/Dashboard2",
+    description: "Non-renewable and fossil fuel energy usage analytics dashboard",
+    technologies: ["R", "Tableau"]
+  },
+  {
+    id: "viz2",
+    name: "This website!",
+    category: "viz",
+    categoryName: "Data Visualization",
+    url: "https://aninditha0604.github.io/AninNair.github.io/",
+    description: "Interactive visualization of project portfolio",
+    technologies: ["SVG", "D3.js", "JavaScript"]
+  },
+  {
+    id: "ml1",
+    name: "Stock Market Trend Prediction",
+    category: "ml",
+    categoryName: "Machine Learning",
+    url: "https://github.com/aninditha0604/StockMarketPrediction_LSTM",
+    description: "An LSTM-based Stock Market Predictor implemented from scratch in Python, analyzing 2010–2024 data to forecast trends with high accuracy",
+    technologies: ["Python", "Pandas", "NumPy", "Scikit"]
+  },
+  {
+    id: "ml2",
+    name: "Greenspace Mapping and Temperature Prediction",
+    category: "ml",
+    categoryName: "Machine Learning",
+    url: "#greenspace",
+    description: "Temperature prediction using Linear and Polylinear Regression and greenspace mapping in Mumbai using Python",
+    technologies: ["Python", "Leaflet", "Folium", "OpenWeather API"]
+  },
+  {
+    id: "ml3",
+    name: "Energy Consumption Prediction",
+    category: "ml",
+    categoryName: "Machine Learning",
+    url: "https://github.com/aninditha0604/Energy-Consumption-Production-using-XGBoost",
+    description: "An XGBoost-based machine learning model, reducing prediction errors for energy consumption by 40% across various regions",
+    technologies: ["Python", "Pandas", "NumPy", "Scikit"]
+  },
+  {
+    id: "research1",
+    name: "Artificial Intelligence for Urban Heat Island",
+    category: "research",
+    categoryName: "Research",
+    url: "",
+    description: "Analyzed four case studies on the use of AI in mitigating Urban Heat Islands, exploring its potential and challenges in urban climate adaptation.",
+    technologies: []
+  },
+  {
+    id: "research2",
+    name: "The Workings of Large Language Models",
+    category: "research",
+    categoryName: "Research",
+    url: "",
+    description: "Explained the fundamentals of Large Language Model starting from the history to transformer-based models for both a technical and non-technical audience.",
+    technologies: []
+  }
+];
     function createProjectCard(project) {
       const card = document.createElement('div');
       card.className = `project-card ${project.category}`;
